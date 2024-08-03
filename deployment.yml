@@ -1,0 +1,47 @@
+services:
+      mysql9-container:
+            image: mysql:latest
+            container_name: mysql9-container
+            restart: always
+            ports:
+                  - "3307:3306"
+            networks:
+                  - Database
+            environment:
+                  MYSQL_ROOT_PASSWORD: TedyDev@2310
+                  MYSQL_ROOT_HOST: "%"
+
+      phpmyadmin:
+            image: arm64v8/phpmyadmin:latest
+            container_name: phpmyadmin-container
+            restart: always
+            ports:
+                  - "8088:80"
+            networks:
+                  - Database
+            environment:
+                  PMA_HOST: mysql9-container
+
+      sqlserver2022-container:
+            image: mcr.microsoft.com/azure-sql-edge
+            container_name: sqlserver2022-container
+            restart: always
+            ports:
+                  - "1433:1433"
+            networks:
+                  - Database
+            environment:
+                  SA_PASSWORD: TedyDev@2310
+                  ACCEPT_EULA: "Y"
+
+networks:
+      Database:
+
+
+#MySQL, PHPMyAdmin, SQLServer 2022 với Docker Compose
+#---------------------------------------------------------#
+#Step 1: Tạo file deployment.yml với nội dung như trên
+#---------------------------------------------------------#
+#Step 2: Chạy các lệnh sau:
+    #docker-compose -f deployment.yml down
+    #docker-compose -f deployment.yml up -d
