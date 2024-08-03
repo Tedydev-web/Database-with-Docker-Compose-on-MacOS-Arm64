@@ -1,13 +1,13 @@
 # Hướng Dẫn Cài Đặt MySQL, PHPMyAdmin và SQL Server 2022 với Docker Compose
 
 ## Mô Tả
-Hướng dẫn này sẽ giúp bạn cài đặt MySQL, PHPMyAdmin và SQL Server 2022 trên macOS sử dụng Docker Compose.
+#### Hướng dẫn này sẽ giúp bạn cài đặt MySQL, PHPMyAdmin và SQL Server 2022 trên macOS sử dụng Docker Compose.
 
 ## Các Bước Cài Đặt
 
 ### Bước 1: Tạo File `deployment.yml`
 
-Tạo một file có tên `deployment.yml` và thêm nội dung sau vào file:
+#### Tạo một file có tên `deployment.yml` và thêm nội dung sau vào file:
 
 ```
 version: '3.8'
@@ -56,17 +56,17 @@ networks:
 
 ### Bước 2: Chạy Các Lệnh Docker Compose
 
-# Dừng và xóa các container hiện tại
+#### Dừng và xóa các container hiện tại
 ```
 docker-compose -f deployment.yml down
 ```
-# Khởi động lại các container
+#### Khởi động lại các container
 ```
 docker-compose -f deployment.yml up -d
 ```
 
 ### Ghi Chú
-# MySQL: Cơ sở dữ liệu MySQL với thông tin cấu hình như root_password, my_database, user, và user_password.
-# PHPMyAdmin: Giao diện web để quản lý MySQL.
-# SQL Server 2022: Cơ sở dữ liệu SQL Server với mật khẩu YourStrong!Passw0rd.
+#### MySQL: Cơ sở dữ liệu MySQL với thông tin cấu hình như root_password, my_database, user, và user_password.
+#### PHPMyAdmin: Giao diện web để quản lý MySQL.
+#### SQL Server 2022: Cơ sở dữ liệu SQL Server với mật khẩu YourStrong!Passw0rd.
 
