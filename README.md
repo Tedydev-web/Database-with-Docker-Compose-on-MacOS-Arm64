@@ -1,7 +1,7 @@
-# Hướng Dẫn Cài Đặt MySQL, PHPMyAdmin và SQL Server 2022 với Docker Compose trên MACOS arm64
+# Hướng Dẫn Cài Đặt MySQL, PHPMyAdmin và SQL Server 2022 với Docker Compose trên MacOS (arm64)
 
 ## Mô Tả
-#### Hướng dẫn này sẽ giúp bạn cài đặt MySQL, PHPMyAdmin và SQL Server 2022 trên macOS sử dụng Docker Compose trên MACOS arm64
+#### Hướng dẫn này sẽ giúp bạn cài đặt MySQL, PHPMyAdmin và SQL Server 2022 trên macOS sử dụng Docker Compose trên MacOS (arm64)
 
 ## Các Bước Cài Đặt
 
