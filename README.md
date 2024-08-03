@@ -66,7 +66,7 @@ docker-compose -f deployment.yml up -d
 ```
 
 ### Ghi Chú
-#### MySQL: Cơ sở dữ liệu MySQL với thông tin cấu hình như root_password, my_database, user, và user_password.
-#### PHPMyAdmin: Giao diện web để quản lý MySQL.
-#### SQL Server 2022: Cơ sở dữ liệu SQL Server với mật khẩu YourStrong!Passw0rd.
+#### - MySQL: Cơ sở dữ liệu MySQL với thông tin cấu hình như root_password, my_database, user, và user_password.
+#### - PHPMyAdmin: Giao diện web để quản lý MySQL.
+#### - SQL Server 2022: Cơ sở dữ liệu SQL Server với mật khẩu YourStrong!Passw0rd.
 
