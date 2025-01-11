@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+      mysql:
+            image: mysql:8.0
+            container_name: mysql-container
+            restart: unless-stopped
+            platform: linux/arm64/v8
+            ports:
+                  - "3306:3306"
+            networks:
+                  - database-network
+            environment:
+                  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-TedyDev@2310}
+                  MYSQL_ROOT_HOST: "%"
+                  MYSQL_DATABASE: ${MYSQL_DATABASE:-master}
+                  MYSQL_USER: ${MYSQL_USER:-sa}
+                  MYSQL_PASSWORD: ${MYSQL_PASSWORD:-TedyDev@2310}
+                  TZ: ${TZ:-Asia/Ho_Chi_Minh}
+                  MYSQL_SSL_ENABLED: ${MYSQL_SSL_ENABLED:-true}
+            volumes:
+                  - mysql_data:/var/lib/mysql
+                  - ./mysql/backup:/backup
+                  - ./mysql/conf.d:/etc/mysql/conf.d
+                  - ./mysql/certs:/etc/mysql/certs
+                  - ./mysql/initdb.d:/docker-entrypoint-initdb.d
+            command: --default-authentication-plugin=mysql_native_password
+                    --character-set-server=utf8mb4
+                    --collation-server=utf8mb4_unicode_ci
+                    --max_connections=1000
+                    --wait_timeout=28800
+            healthcheck:
+                  test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+
+      phpmyadmin:
+            image: phpmyadmin:latest
+            platform: linux/arm64/v8
+            container_name: phpmyadmin-container
+            restart: unless-stopped
+            ports:
+                  - "8088:80"
+            networks:
+                  - database-network
+            environment:
+                  PMA_HOST: mysql
+                  PMA_PORT: 3306
+                  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-TedyDev@2310}
+                  PMA_ARBITRARY: 1
+                  UPLOAD_LIMIT: 300M
+                  MAX_EXECUTION_TIME: 600
+                  MEMORY_LIMIT: 512M
+                  TZ: ${TZ:-Asia/Ho_Chi_Minh}
+            volumes:
+                  - ./phpmyadmin/sessions:/sessions
+                  - ./phpmyadmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+                  - ./phpmyadmin/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+            depends_on:
+                  mysql:
+                    condition: service_healthy
+
+      sqlserver:
+            image: mcr.microsoft.com/azure-sql-edge:latest
+            platform: linux/arm64/v8
+            container_name: sqlserver-container
+            restart: unless-stopped
+            ports:
+                  - "1433:1433"
+            networks:
+                  - database-network
+            environment:
+                  ACCEPT_EULA: "Y"
+                  SA_PASSWORD: ${SQL_SA_PASSWORD:-TedyDev@2310}
+                  MSSQL_PID: "Developer"
+                  MSSQL_COLLATION: "Vietnamese_CI_AS"
+                  MSSQL_TCP_PORT: 1433
+                  MSSQL_MEMORY_LIMIT_MB: ${SQL_SERVER_MAX_MEMORY:-2048}
+                  MSSQL_BACKUP_DIR: /backup
+                  TZ: ${TZ:-Asia/Ho_Chi_Minh}
+            volumes:
+                  - sqlserver_data:/var/opt/mssql
+                  - ./sqlserver/backup:/backup
+                  - ./sqlserver/scripts:/scripts
+                  - ./sqlserver/certs:/certs
+            cap_add:
+                  - SYS_PTRACE
+            healthcheck:
+                  test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" || exit 1
+                  interval: 10s
+                  timeout: 5s
+                  retries: 5
+
+      prometheus:
+            image: prom/prometheus:latest
+            container_name: prometheus-container
+            restart: unless-stopped
+            ports:
+                  - "9090:9090"
+            volumes:
+                  - ./prometheus:/etc/prometheus
+                  - prometheus_data:/prometheus
+            networks:
+                  - database-network
+            command:
+                  - '--config.file=/etc/prometheus/prometheus.yml'
+                  - '--storage.tsdb.path=/prometheus'
+                  - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+                  - '--web.console.templates=/usr/share/prometheus/consoles'
+
+      grafana:
+            image: grafana/grafana:latest
+            container_name: grafana-container
+            restart: unless-stopped
+            ports:
+                  - "3000:3000"
+            volumes:
+                  - grafana_data:/var/lib/grafana
+            networks:
+                  - database-network
+            environment:
+                  GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+
+      elasticsearch:
+            image: docker.elastic.co/elasticsearch/elasticsearch:8.11.1
+            container_name: elasticsearch-container
+            restart: unless-stopped
+            environment:
+                  - discovery.type=single-node
+                  - ES_JAVA_OPTS=-Xms512m -Xmx512m
+            volumes:
+                  - elasticsearch_data:/usr/share/elasticsearch/data
+            networks:
+                  - database-network
+            ports:
+                  - "9200:9200"
+
+      kibana:
+            image: docker.elastic.co/kibana/kibana:8.11.1
+            container_name: kibana-container
+            restart: unless-stopped
+            ports:
+                  - "5601:5601"
+            networks:
+                  - database-network
+            depends_on:
+                  - elasticsearch
+
+networks:
+      database-network:
+            driver: bridge
+            name: database-network
+            ipam:
+                  driver: default
+                  config:
+                        - subnet: 172.20.0.0/16
+
+volumes:
+      mysql_data:
+            name: mysql_data
+      sqlserver_data:
+            name: sqlserver_data
+      prometheus_data:
+            name: prometheus_data
+      grafana_data:
+            name: grafana_data
+      elasticsearch_data:
+            name: elasticsearch_data

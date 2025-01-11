@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+      phpmyadmin:
+            image: arm64v8/phpmyadmin:latest
+            container_name: phpmyadmin-container
+            restart: unless-stopped
+            platform: linux/arm64/v8
+            ports:
+                  - "${PMA_PORT:-8088}:80"
+            environment:
+                  PMA_HOST: mysql
+                  PMA_PORT: 3306
+                  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-TedyDev@2310}
+                  PMA_ARBITRARY: 1
+                  UPLOAD_LIMIT: ${PMA_UPLOAD_LIMIT:-64M}
+                  MAX_EXECUTION_TIME: ${PMA_MAX_EXECUTION_TIME:-300}
+                  MEMORY_LIMIT: ${PMA_MEMORY_LIMIT:-256M}
+            volumes:
+                  - ./config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
+                  - ./logs:/var/log/php
+            networks:
+                  - mysql-network
+            depends_on:
+                  - mysql
+
+networks:
+      mysql-network:
+            external: true
+            name: mysql-network 

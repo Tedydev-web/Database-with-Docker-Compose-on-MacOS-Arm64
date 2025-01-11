@@ -1,0 +1,33 @@
+{
+    "name": "Database Development Environment",
+    "dockerComposeFile": ["../compose-dev.yaml"],
+    "service": "workspace",
+    "workspaceFolder": "/workspace",
+    
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+        "ghcr.io/devcontainers/features/git:1": {},
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-azuretools.vscode-docker",
+                "mtxr.sqltools",
+                "mtxr.sqltools-driver-mysql",
+                "mtxr.sqltools-driver-mssql",
+                "cweijan.vscode-database-client2"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "zsh"
+            }
+        }
+    },
+
+    "forwardPorts": [3306, 1433, 6379, 8088],
+    
+    "postCreateCommand": "chmod +x /workspace/generate_certs.sh && /workspace/generate_certs.sh",
+    
+    "remoteUser": "vscode"
+} 
