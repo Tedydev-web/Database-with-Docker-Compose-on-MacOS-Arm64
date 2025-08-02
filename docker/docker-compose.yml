@@ -1,13 +1,13 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: service-postgres
+    container_name: server-postgres
     restart: unless-stopped
     ports:
       - '5432:5432'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-master123}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-TedyDev@23105}
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -22,7 +22,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: service-redis
+    container_name: server-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -37,36 +37,90 @@ services:
       retries: 5
       start_period: 10s
     command: redis-server --appendonly yes
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: nestjs-app
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: server-mssql
     restart: unless-stopped
     ports:
-      - '3001:3001'
-    env_file:
-      - .env.docker
+      - '1433:1433'
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD:-TedyDev@23105}
+      ACCEPT_EULA: 'Y'
+    volumes:
+      - mssql_data:/var/opt/mssql
     networks:
       - app-network
+    healthcheck:
+      test:
+        ['CMD-SHELL', '/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P ${SA_PASSWORD:-TedyDev@23105} -Q "SELECT 1"']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: server-elasticsearch
+    restart: unless-stopped
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    environment:
+      discovery.type: single-node
+      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      xpack.security.enabled: 'false'
+      xpack.security.enrollment.enabled: 'false'
+      xpack.security.http.ssl.enabled: 'false'
+      xpack.security.transport.ssl.enabled: 'false'
     volumes:
-      - .:/app
-      - /app/node_modules
-      - /app/dist
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9200']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: server-kibana
+    restart: unless-stopped
+    ports:
+      - '5601:5601'
+    environment:
+      ELASTICSEARCH_HOSTS: 'http://server-elasticsearch:9200'
+    networks:
+      - app-network
     depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - elasticsearch
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:5601']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 networks:
   app-network:
     driver: bridge
-    name: network
+    name: server-network
 
 volumes:
   postgres_data:
     driver: local
-    name: postgres-data
+    name: server-postgres-data
   redis_data:
     driver: local
-    name: redis-data
+    name: server-redis-data
+  mssql_data:
+    driver: local
+    name: server-mssql-data
+  elasticsearch_data:
+    driver: local
+    name: server-elasticsearch-data
+  kibana_data:
+    driver: local
+    name: server-kibana-data
