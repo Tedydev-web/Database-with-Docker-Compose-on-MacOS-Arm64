@@ -103,6 +103,28 @@ services:
       retries: 5
       start_period: 30s
 
+  mysql:
+    image: mysql:8.0
+    container_name: server-mysql
+    restart: unless-stopped
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-TedyDev@23105}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-mysql}
+      MYSQL_USER: ${MYSQL_USER:-mysql}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-TedyDev@23105}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping -u root -p${MYSQL_ROOT_PASSWORD:-TedyDev@23105}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 networks:
   app-network:
     driver: bridge
@@ -124,3 +146,6 @@ volumes:
   kibana_data:
     driver: local
     name: server-kibana-data
+  mysql_data:
+    driver: local
+    name: server-mysql-data
